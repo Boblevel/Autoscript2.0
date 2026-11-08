@@ -1,0 +1,36 @@
+#!/bin/bash
+grenbo="\e[92;1m"
+NC='\033[0m'
+clear
+printf '\n╭────────────────────────────────────────────╮\n'
+printf '│  %s\n' '🔒  COMPTES SHADOWSOCKS' 
+printf '╰────────────────────────────────────────────╯\n'
+printf '  [01] ➕  Créer un compte\n'
+printf '  [02] 🧪  Compte d’essai\n'
+printf '  [03] 🗑  Supprimer un compte\n'
+printf '  [04] 🔄  Renouveler un compte\n'
+printf '  [05] 📊  Voir les connexions\n'
+printf '  [00] ↩  Retour au menu principal\n\n'
+read -r -p "Choix : " menu
+
+case $menu in
+1)
+    addss
+    ;;
+2)
+    trialss
+    ;;
+3)
+    delss
+    ;;
+4)
+    renewss
+    ;;
+5)
+    cekss
+    ;;
+ 
+*)
+    menu
+    ;;
+esac

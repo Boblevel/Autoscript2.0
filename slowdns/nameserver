@@ -1,0 +1,53 @@
+#!/bin/bash
+set -euo pipefail
+REPOS="${REPO:-https://raw.githubusercontent.com/fahrialimudin/autoscript-vip/main/}"
+SCRIPT_DIR="${SCRIPT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+DOMAIN_PATH=$(cat /etc/xray/domain 2>/dev/null || true)
+if [[ -z "$DOMAIN_PATH" ]]; then
+    echo "Domain belum tersedia di /etc/xray/domain"
+    exit 1
+fi
+NS_DOMAIN="dns.${DOMAIN_PATH}"
+echo "$NS_DOMAIN" >/etc/xray/dns
+
+TMPDIR=$(mktemp -d)
+cleanup() { rm -rf "$TMPDIR"; }
+trap cleanup EXIT
+mkdir -p /etc/slowdns
+cd "$TMPDIR"
+
+if [ -f "${SCRIPT_DIR}/slowdns/dnstt-server" ] && [ -f "${SCRIPT_DIR}/slowdns/dnstt-client" ]; then
+    cp "${SCRIPT_DIR}/slowdns/dnstt-server" dnstt-server
+    cp "${SCRIPT_DIR}/slowdns/dnstt-client" dnstt-client
+else
+    curl -fSL "${REPOS}slowdns/dnstt-server" -o dnstt-server
+    curl -fSL "${REPOS}slowdns/dnstt-client" -o dnstt-client
+fi
+chmod +x dnstt-server dnstt-client
+if [ -s /etc/slowdns/server.key ] && [ -s /etc/slowdns/server.pub ]; then
+    cp /etc/slowdns/server.key server.key
+    cp /etc/slowdns/server.pub server.pub
+else
+    ./dnstt-server -gen-key -privkey-file server.key -pubkey-file server.pub
+fi
+install -m 755 dnstt-server /etc/slowdns/dnstt-server
+install -m 755 dnstt-client /etc/slowdns/dnstt-client
+install -m 600 server.key /etc/slowdns/server.key
+install -m 644 server.pub /etc/slowdns/server.pub
+
+if [ -f "${SCRIPT_DIR}/slowdns/server" ] && [ -f "${SCRIPT_DIR}/slowdns/client" ]; then
+    cp "${SCRIPT_DIR}/slowdns/client" /etc/systemd/system/client.service
+    cp "${SCRIPT_DIR}/slowdns/server" /etc/systemd/system/server.service
+else
+    curl -fSL "${REPOS}slowdns/client" -o /etc/systemd/system/client.service
+    curl -fSL "${REPOS}slowdns/server" -o /etc/systemd/system/server.service
+fi
+sed -i "s/xxxx/${NS_DOMAIN}/g" /etc/systemd/system/client.service /etc/systemd/system/server.service
+systemctl daemon-reload
+systemctl enable --now server.service client.service || true
+
+echo "SlowDNS NS: $NS_DOMAIN"
+echo "À configurer chez votre fournisseur DNS :"
+echo "  A  ns1.${DOMAIN_PATH}  -> IP publique du VPS"
+echo "  NS dns.${DOMAIN_PATH}  -> ns1.${DOMAIN_PATH}"
+echo "Le DNS public doit répondre avant de tester SlowDNS."

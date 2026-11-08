@@ -1,0 +1,17 @@
+#!/bin/bash
+set -e
+clear
+printf '⬆  MISE À JOUR LOCALE DES MENUS\n'
+SOURCE=/opt/autoscript-vip-src/menu
+if [ ! -d "$SOURCE" ]; then
+    echo 'Les menus sources ne sont pas disponibles. Aucun fichier modifié.'
+    exit 1
+fi
+for fichier in "$SOURCE"/*; do
+    [ -f "$fichier" ] || continue
+    nom=$(basename "$fichier")
+    install -m 755 "$fichier" "/usr/local/sbin/$nom"
+done
+echo "[OK] Menus restaurés depuis la copie locale."
+sleep 1
+menu

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+clear
+printf '👥  COMPTES VMESS\n\n'
+if [ ! -r /etc/xray/config.json ]; then
+    echo 'Configuration Xray introuvable.'
+else
+    awk '$1 == "###" { if (!vus[$2]++) printf "  %-24s expiration : %s\n", $2, $3; trouvés++ } END { if (!trouvés) print "Aucun compte VMess." }' /etc/xray/config.json
+fi
+printf '\n'
+read -r -p 'Entrée pour revenir au menu : ' _ || true
+m-vmess
