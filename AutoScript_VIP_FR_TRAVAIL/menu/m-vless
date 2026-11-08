@@ -1,0 +1,35 @@
+#!/bin/bash
+
+NC='\033[0;37m'
+COLOR1='\033[0;34m'
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BICyan='\033[0;34m' 
+BIWhite='\033[1;97m'  
+red() { echo -e "\\033[31;1m${*}\\033[0m"; }
+clear
+clear
+
+clear
+printf '\n╭────────────────────────────────────────────╮\n'
+printf '│  %s\n' '⚡  COMPTES VLESS' 
+printf '╰────────────────────────────────────────────╯\n'
+printf '  [01] ➕  Créer un compte\n'
+printf '  [02] 🧪  Compte d’essai\n'
+printf '  [03] 🗑  Supprimer un compte\n'
+printf '  [04] 🔄  Renouveler un compte\n'
+printf '  [05] 📊  Voir les connexions\n'
+printf '  [00] ↩  Retour au menu principal\n\n'
+read -r -p "Choix : " opt
+
+echo -e ""
+case $opt in
+1) clear ; addvless ;;
+2) clear ; trialvless ;;
+3) clear ; delvless ;;
+4) clear ; renewvless ;;
+5) clear ; cekvless ;;
+0) clear ; menu ;;
+x) exit ;;
+*) echo -e "" ; echo "Press any key to back on menu" ; sleep 1 ; menu ;;
+esac
